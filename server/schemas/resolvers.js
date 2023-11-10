@@ -9,29 +9,26 @@ const resolvers = {
                     _id: context.user._id
                 }).select('-__v -password');
             }
-            throw new AuthenticationError('You need to be logged in!');
+            throw AuthenticationError;
         },
     },
 
     Mutation: {
         login: async (parent, { email, password }) => {
-            const user = await User.findOne({
-                email
-            });
+            const user = await User.findOne({ email });
             if (!user) {
-                throw new AuthenticationError('Cannot find this user');
+                throw AuthenticationError;
             }
 
             const correctPw = await user.isCorrectPassword(password);
             if (!correctPw) {
-                throw new AuthenticationError('Wrong password!');
+                throw AuthenticationError;
             }
             const token = signToken(user);
             return { token, user };
         },
-        addUser: async (parent, args) => {
-            const user = await User.create(args);
-
+        addUser: async (parent, { username, email, password }) => {
+            const user = await User.create({ username, email, password });
             const token = signToken(user);
             return { token, user };
         },
@@ -45,7 +42,7 @@ const resolvers = {
 
                 return updatedUser;
             }
-            throw new AuthenticationError('You need to be logged in!');
+            throw AuthenticationError;
         },
         removeBook: async (parent, { bookId }, context) => {
             if (context.user) {
@@ -56,7 +53,7 @@ const resolvers = {
                 );
                 return updatedUser;
             }
-            throw new AuthenticationError('You need to be logged in!');
+            throw AuthenticationError;
         }
     }
 }
